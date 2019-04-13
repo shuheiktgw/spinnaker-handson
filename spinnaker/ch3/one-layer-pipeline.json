@@ -1,0 +1,17 @@
+{
+  "application": "sample-application",
+  "name": "One Layer Pipeline",
+  "id": "one-layer-pipeline",
+  "keepWaitingPipelines": true,
+  "limitConcurrent": true,
+  "stages": [
+    {
+      "refId": "1",
+      "name": "First Wait",
+      "comments": "This is a first wait",
+      "requisiteStageRefIds": [],
+      "type": "wait",
+      "waitTime": 10
+    }
+  ]
+}

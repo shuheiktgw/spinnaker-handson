@@ -1,0 +1,96 @@
+{
+  "application": "spinnaker-handson",
+  "name": "Deploy Pipeline",
+  "id": "deploy-pipeline",
+  "keepWaitingPipelines": true,
+  "limitConcurrent": true,
+  "stages": [
+    {
+      "refId": "1",
+      "name": "Production Deploy",
+      "requisiteStageRefIds": [],
+      "type": "deployManifest",
+      "account": "default",
+      "cloudProvider": "kubernetes",
+      "source": "text",
+      "moniker": {
+        "app": "spinnaker-handson"
+      },
+      "manifests": [
+        {
+          "apiVersion": "apps/v1",
+          "kind": "Deployment",
+          "metadata": {
+            "name": "production-deployment",
+            "namespace": "default"
+          },
+          "spec": {
+            "replicas": 3,
+            "selector": {
+              "matchLabels": {
+                "deployment": "production"
+              }
+            },
+            "template": {
+              "metadata": {
+                "labels": {
+                  "deployment": "production",
+                  "app": "production-app"
+                }
+              },
+              "spec": {
+                "containers": [
+                  {
+                    "image": "asia.gcr.io/PROJECT_ID/spinnaker-handson:${ trigger['tag'] }",
+                    "name": "production-app",
+                    "ports": [
+                      {
+                        "containerPort": 8080
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "apiVersion": "v1",
+          "kind": "Service",
+          "metadata": {
+            "labels": {
+              "env": "production"
+            },
+            "namespace": "default",
+            "name": "production-app"
+          },
+          "spec": {
+            "type": "ClusterIP",
+            "selector": {
+              "app": "production-app"
+            },
+            "ports": [
+              {
+                "name": "http",
+                "protocol": "TCP",
+                "port": 8080,
+                "targetPort": 8080
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "triggers": [
+    {
+      "account": "gcr",
+      "type": "docker",
+      "organization": "PROJECT_ID",
+      "registry": "asia.gcr.io",
+      "repository": "PROJECT_ID/spinnaker-handson",
+      "tag": "v.*",
+      "enabled": true
+    }
+  ]
+}

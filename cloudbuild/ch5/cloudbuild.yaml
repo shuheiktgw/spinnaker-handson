@@ -1,0 +1,9 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '--tag=asia.gcr.io/$PROJECT_ID/spinnaker-handson-test', '--file=Dockerfile.test', '.']
+  - name: 'asia.gcr.io/$PROJECT_ID/spinnaker-handson-test'
+    args: ['go', 'test', '-v']
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '--tag=asia.gcr.io/$PROJECT_ID/spinnaker-handson:$TAG_NAME', '.']
+images:
+  - 'asia.gcr.io/$PROJECT_ID/spinnaker-handson:$TAG_NAME'

@@ -1,0 +1,48 @@
+{
+  "application": "sample-application",
+  "name": "Three Layers Pipeline",
+  "id": "three-layers-pipeline",
+  "keepWaitingPipelines": true,
+  "limitConcurrent": true,
+  "stages": [
+    {
+      "refId": "1",
+      "name": "First Wait",
+      "comments": "This is a first wait",
+      "requisiteStageRefIds": [],
+      "type": "wait",
+      "waitTime": 10
+    },
+    {
+      "refId": "2-1",
+      "name": "Second Wait One",
+      "comments": "This is a second wait One",
+      "requisiteStageRefIds": [
+        "1"
+      ],
+      "type": "wait",
+      "waitTime": 10
+    },
+    {
+      "refId": "2-2",
+      "name": "Second Wait Two",
+      "comments": "This is a second wait Two",
+      "requisiteStageRefIds": [
+        "1"
+      ],
+      "type": "wait",
+      "waitTime": 20
+    },
+    {
+      "refId": "3",
+      "name": "Third Wait",
+      "comments": "This is a third wait",
+      "requisiteStageRefIds": [
+        "2-1",
+        "2-2"
+      ],
+      "type": "wait",
+      "waitTime": 10
+    }
+  ]
+}

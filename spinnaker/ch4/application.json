@@ -1,0 +1,7 @@
+{
+  "name": "spinnaker-handson",
+  "email": "EMAIL",
+  "cloudProviders": [
+    "kubernetes"
+  ]
+}

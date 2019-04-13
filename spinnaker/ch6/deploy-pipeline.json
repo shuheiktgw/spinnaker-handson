@@ -1,0 +1,234 @@
+{
+  "application": "spinnaker-handson",
+  "name": "Deploy Pipeline",
+  "id": "deploy-pipeline",
+  "keepWaitingPipelines": true,
+  "limitConcurrent": true,
+  "stages": [
+    {
+      "refId": "1",
+      "name": "Test Deploy",
+      "requisiteStageRefIds": [],
+      "type": "deployManifest",
+      "account": "default",
+      "cloudProvider": "kubernetes",
+      "source": "text",
+      "moniker": {
+        "app": "spinnaker-handson"
+      },
+      "manifests": [
+        {
+          "apiVersion": "apps/v1",
+          "kind": "Deployment",
+          "metadata": {
+            "name": "test-deployment",
+            "namespace": "default"
+          },
+          "spec": {
+            "replicas": 3,
+            "selector": {
+              "matchLabels": {
+                "deployment": "test"
+              }
+            },
+            "template": {
+              "metadata": {
+                "labels": {
+                  "deployment": "test",
+                  "app": "test-app"
+                }
+              },
+              "spec": {
+                "containers": [
+                  {
+                    "image": "asia.gcr.io/PROJECT_ID/spinnaker-handson:${ trigger['tag'] }",
+                    "name": "test-app",
+                    "ports": [
+                      {
+                        "containerPort": 8080
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "apiVersion": "v1",
+          "kind": "Service",
+          "metadata": {
+            "labels": {
+              "env": "test"
+            },
+            "name": "test-app",
+            "namespace": "default"
+          },
+          "spec": {
+            "type": "ClusterIP",
+            "selector": {
+              "app": "test-app"
+            },
+            "ports": [
+              {
+                "name": "http",
+                "protocol": "TCP",
+                "port": 8080,
+                "targetPort": 8080
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "refId": "2",
+      "name": "Delete E2E Job",
+      "requisiteStageRefIds": ["1"],
+      "type": "deleteManifest",
+      "account": "default",
+      "cloudProvider": "kubernetes",
+      "completeOtherBranchesThenFail": false,
+      "continuePipeline": true,
+      "failPipeline": false,
+      "kinds": [
+        "job"
+      ],
+      "location": "default",
+      "manifestName": "job e2e",
+      "options": {
+        "cascading": true
+      }
+    },
+    {
+      "refId": "3",
+      "name": "E2E Test",
+      "requisiteStageRefIds": ["2"],
+      "type": "deployManifest",
+      "account": "default",
+      "cloudProvider": "kubernetes",
+      "source": "text",
+      "moniker": {
+        "app": "spinnaker-handson"
+      },
+      "manifests": [
+        {
+          "apiVersion": "batch/v1",
+          "kind": "Job",
+          "metadata":{
+            "name": "e2e",
+            "namespace": "default"
+          },
+          "spec":{
+            "backoffLimit": 4,
+            "template": {
+              "spec": {
+                "containers": [
+                  {
+                    "image": "asia.gcr.io/PROJECT_ID/spinnaker-handson-e2e:${ trigger['tag'] }",
+                    "name": "e2e",
+                    "env": [
+                      {
+                        "name": "URL",
+                        "value": "http://test-app:8080/"
+                      }
+                    ],
+                    "command": ["sh", "test.sh"]
+                  }
+                ],
+                "restartPolicy": "Never"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "refId": "4",
+      "name": "Production Deploy",
+      "requisiteStageRefIds": ["3"],
+      "type": "deployManifest",
+      "account": "default",
+      "cloudProvider": "kubernetes",
+      "source": "text",
+      "moniker": {
+        "app": "spinnaker-handson"
+      },
+      "manifests": [
+        {
+          "apiVersion": "apps/v1",
+          "kind": "Deployment",
+          "metadata": {
+            "name": "production-deployment",
+            "namespace": "default"
+          },
+          "spec": {
+            "replicas": 3,
+            "selector": {
+              "matchLabels": {
+                "deployment": "production"
+              }
+            },
+            "template": {
+              "metadata": {
+                "labels": {
+                  "deployment": "production",
+                  "app": "production-app"
+                }
+              },
+              "spec": {
+                "containers": [
+                  {
+                    "image": "asia.gcr.io/PROJECT_ID/spinnaker-handson:${ trigger['tag'] }",
+                    "name": "production-app",
+                    "ports": [
+                      {
+                        "containerPort": 8080
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "apiVersion": "v1",
+          "kind": "Service",
+          "metadata": {
+            "labels": {
+              "env": "production"
+            },
+            "name": "production-app",
+            "namespace": "default"
+          },
+          "spec": {
+            "type": "ClusterIP",
+            "selector": {
+              "app": "production-app"
+            },
+            "ports": [
+              {
+                "name": "http",
+                "protocol": "TCP",
+                "port": 8080,
+                "targetPort": 8080
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "triggers": [
+    {
+      "account": "gcr",
+      "type": "docker",
+      "organization": "PROJECT_ID",
+      "registry": "asia.gcr.io",
+      "repository": "PROJECT_ID/spinnaker-handson",
+      "tag": "v.*",
+      "enabled": true
+    }
+  ]
+}

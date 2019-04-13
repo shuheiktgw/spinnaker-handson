@@ -1,0 +1,27 @@
+{
+  "application": "sample-application",
+  "name": "Two Layers Pipeline",
+  "id": "two-layers-pipeline",
+  "keepWaitingPipelines": true,
+  "limitConcurrent": true,
+  "stages": [
+    {
+      "refId": "1",
+      "name": "First Wait",
+      "comments": "This is a first wait",
+      "requisiteStageRefIds": [],
+      "type": "wait",
+      "waitTime": 10
+    },
+    {
+      "refId": "2",
+      "name": "Second Wait",
+      "comments": "This is a second wait",
+      "requisiteStageRefIds": [
+        "1"
+      ],
+      "type": "wait",
+      "waitTime": 20
+    }
+  ]
+}

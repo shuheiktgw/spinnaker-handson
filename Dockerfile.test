@@ -1,0 +1,5 @@
+FROM golang:1.12.1
+
+WORKDIR /go/src/github.com/shuheiktgw/spinnaker-handson
+COPY main.go .
+COPY main_test.go .

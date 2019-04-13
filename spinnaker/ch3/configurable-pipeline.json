@@ -1,0 +1,21 @@
+{
+  "application": "sample-application",
+  "name": "Configurable Pipeline",
+  "id": "configurable-pipeline",
+  "keepWaitingPipelines": true,
+  "limitConcurrent": true,
+  "parameterConfig": [{
+    "name": "WaitTime",
+    "required": true
+  }],
+  "stages": [
+    {
+      "refId": "1",
+      "name": "Configurable Wait",
+      "comments": "This is a configurable wait",
+      "requisiteStageRefIds": [],
+      "type": "wait",
+      "waitTime": "${ parameters.WaitTime }"
+    }
+  ]
+}

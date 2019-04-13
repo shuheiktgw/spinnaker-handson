@@ -1,0 +1,5 @@
+FROM alpine
+RUN apk add --no-cache curl jq
+
+COPY e2e/test.sh .
+RUN chmod +x test.sh
